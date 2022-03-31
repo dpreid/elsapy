@@ -21,10 +21,11 @@ class ElsSearch():
         'scopus',
     ]
 
-    def __init__(self, query, index):
-        """Initializes a search object with a query and target index."""
+    def __init__(self, query, index, num_results):
+        """Initializes a search object with a query, target index and the number of results requested."""
         self.query = query
         self.index = index
+        self.num_results = num_results
         self._cursor_supported = (index in self._cursored_indexes)
         self._uri = self._base_url + self.index + '?query=' + url_encode(
                 self.query)
@@ -96,7 +97,7 @@ class ElsSearch():
         self._tot_num_res = int(api_response['search-results']['opensearch:totalResults'])
         self._results = api_response['search-results']['entry']
         if get_all is True:
-            while (self.num_res < self.tot_num_res) and not self._upper_limit_reached():
+            while (self.num_res < self.num_results) and not self._upper_limit_reached():
                 for e in api_response['search-results']['link']:
                     if e['@ref'] == 'next':
                         next_url = e['@href']
@@ -109,4 +110,4 @@ class ElsSearch():
     def hasAllResults(self):
         """Returns true if the search object has retrieved all results for the
             query from the index (i.e. num_res equals tot_num_res)."""
-        return (self.num_res is self.tot_num_res)
+        return (self.num_res is self.num_results)
