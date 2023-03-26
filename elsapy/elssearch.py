@@ -21,14 +21,15 @@ class ElsSearch():
         'scopus',
     ]
 
-    def __init__(self, query, index, num_results):
-        """Initializes a search object with a query, target index and the number of results requested."""
+    def __init__(self, query, index, num_results, sort = 'relevancy'):
+        """Initializes a search object with a query, a sort parameter (e.g. relevancy) target index and the number of results requested."""
         self.query = query
+        self.sort = sort
         self.index = index
         self.num_results = num_results
         self._cursor_supported = (index in self._cursored_indexes)
         self._uri = self._base_url + self.index + '?query=' + url_encode(
-                self.query)
+                self.query) + '&sort=' + url_encode(self.sort)
         self.results_df = pd.DataFrame()
 
     # properties
@@ -93,6 +94,7 @@ class ElsSearch():
             get_all = True, multiple API calls will be made to iteratively get 
             all results for the search, up to a maximum of 5,000."""
         ## TODO: add exception handling
+        print(self._uri)
         api_response = els_client.exec_request(self._uri)
         self._tot_num_res = int(api_response['search-results']['opensearch:totalResults'])
         self._results = api_response['search-results']['entry']
